@@ -15,9 +15,6 @@ public class GroupService implements IGroupService {
     private static AtomicLong sequence = new AtomicLong(1);
     private static List<Group> groups=new ArrayList<>();
 
-    //@Autowired
-    //private GroupRepository repository;
-
     @Override
     public List<Group> findAll() {
 
@@ -57,20 +54,7 @@ public class GroupService implements IGroupService {
         //to add more logic later
         groups.remove(group);
     }
-
-    @Override
-    public List<Group> deleteMember(String memberId) {
-        //to add more logic later
-        for (Group g1 : groups) {
-            //if (g1.getMembers().keySet().contains(memberId)) {
-                groups.remove(g1);
-                //g1.getMembers().keySet().remove(memberId);
-                //groups.add(g1);
-            //}
-        }
-        return groups;
-       //existingGroup.getMembers().remove(memberId);
-    }
+    
 
     @Override
     public Optional<Group> updateGroupAttribute(Long gid, Map<String, String>attrs) {
@@ -99,12 +83,7 @@ public class GroupService implements IGroupService {
             }
             return foundGroup;
         }
-        /**
-        foundGroup.ifPresent(g->{
-            int index=groups.indexOf(g);
-            g.addMember(memberIn);
-            groups.set(index, g);
-        })**/
+       
         return Optional.of(new Group(5L));
     }
 

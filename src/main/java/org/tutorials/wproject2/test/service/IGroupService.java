@@ -23,8 +23,6 @@ public interface IGroupService {
 
     void deleteGroup(Group group);
 
-    //void deleteMember(Group group, String memberId);
-    List<Group> deleteMember(String memberId);
 
     Optional<Group> updateGroupAttribute(Long gid, Map<String, String> attr);
 

@@ -58,8 +58,10 @@ public class StepDefinition implements En {
     public void setup() throws Exception {
         RestAssured.baseURI="http://localhost";
         RestAssured.port = 8080;
+        
+        	
+ } 
 
-    }
 
     @BeforeStep
     public void methodSetUp() throws Exception {
@@ -71,12 +73,22 @@ public class StepDefinition implements En {
 
     @After
     public void Teardown() throws Exception {
+        try {
+            given().basePath(basePath).contentType(applicationJson)
+            .when().delete("group/1");
+            
+            given().basePath(basePath).contentType(applicationJson)
+            .when().delete("group/2");
+           
+        }catch(Exception e) {
+            //ignore any errors;
+        }
     }
 
 
     @Given("api request uri {string} and expected status code {int}")
     public void apiRequestUriResponseCode(String apiPath, Integer statusCode) throws Throwable {
-       world.setStatusCode(statusCode);
+        world.setStatusCode(statusCode);
         world.setApiPath(apiPath);
 
     }
@@ -87,7 +99,7 @@ public class StepDefinition implements En {
         List<Map<String, String>> gAttrs=inputTable.asMaps();
         GroupIn groupIn=new GroupIn(gAttrs.get(0));
 
-        world.responseGroup=given().basePath(basePath).contentType("application/json").body(groupIn)
+        world.responseGroup=given().basePath(basePath).contentType(APPLICATION_JSON).body(groupIn)
                 .when().post(world.getApiPath()).then().assertThat().statusCode(world.getStatusCode())
                 .extract().as(Group.class);
 
@@ -107,52 +119,66 @@ public class StepDefinition implements En {
 
 
     @Then("I verify that the response contents {string} contain following values:")
-    public void ThenVerifyResponseStringGroupList(String negative, io.cucumber.datatable.DataTable responseBody) throws Exception {
+    public void ThenVerifyResponseStringGroupList(String negative, io.cucumber.datatable.DataTable expected) throws Exception {
 
-        List<Map<String, String>>expectedValues=responseBody.asMaps();
+        List<Map<String, String>>expectedList=expected.asMaps();
 
-        Map<String, String>actualAttributes=world.responseGroup.getAttributes();
-
+        Map<String, String>actual=world.responseGroup.getAttributes();
         if (negative.trim().contains("not")) {
-            expectedValues.forEach(k->assertFalse(k.entrySet().contains(actualAttributes.entrySet())));
+            expectedList.forEach(expectedE -> {
+                for (String actualKey : actual.keySet()) assertFalse(expectedE.containsKey(actualKey));
+            });
         } else {
-            //expectedValues.forEach(k->assertFalse(k.keySet().contains(actualAttributes.keySet())));
-            //expectedValues.forEach(k->assertFalse(k.values().contains(actualAttributes.values())));
-            expectedValues.forEach(k->assertFalse(k.entrySet().contains(actualAttributes.entrySet())));
+            expectedList.forEach(expectedE -> {
+                for (Map.Entry<String, String>actualEntry : actual.entrySet()) {
+                    assertTrue(expectedE.containsKey(actualEntry.getKey()));
+                }
+                for (Map.Entry<String, String> actualEntry : actual.entrySet()) assertTrue(expectedE.containsValue(actualEntry.getValue()));
+            });
         }
     }
+
 
    @Then("I verify that the response group matches:")
     public void ThenVerifyResponseGroup(Group expectedGroup) throws Exception {
 
-      assertTrue(world.responseGroup.equals(expectedGroup));
+      assertEquals(expectedGroup, world.responseGroup);
+    }
+
+    @Then("I verify that the group response with members matches:")
+    public void ThenVerifyResponseGroup(DataTable expected) throws Exception {
+
+        List<Map<String, String>>expectedList=expected.asMaps();
+
+        String actual=world.responseString;
+       
+        expectedList.forEach(expectedE -> {
+            expectedE.entrySet().stream().forEach(e -> {
+                assertTrue(actual.contains(e.getKey()));
+                assertTrue(actual.contains(e.getValue()));
+            });
+        });
+
     }
 
     @When("I retrieve specific group via api {string} using {string} {long} with expected response status code {int}")
     public void whenGetSpecificGroupThenReturnTheGroup200(String uri, String param1, Long gid, Integer statusCode) throws Exception {
 
-        world.responseGroup=given().basePath(basePath).accept(ContentType.JSON)
+        world.responseString=given().basePath(basePath).accept(ContentType.JSON)
                 .log().all().queryParam(param1, gid.toString())
                 .when().get(uri).then().statusCode(statusCode)
-                .extract().as(Group.class);
-        world.responseString=world.responseGroup.toString();
-
-
-
+                .extract().asString();
+       
     }
 
-    @Given("the group with gid {long} exists or get created")
-    public void GivenGroup(Long gid) throws Exception {
-        try {
-             given().basePath(basePath).accept(ContentType.JSON)
-                    .log().all().queryParam("gid", gid.toString())
-                    .when().get("/group").then().statusCode(HttpStatus.OK.value());
-        } catch (Exception e) {
+
+    @Given("the group with gid {long} is created")
+    public void GivenGroupDeleted(Long gid) throws Exception {
+       
             Group newGroup=new Group(gid);
             world.responseGroup=given().basePath(basePath).contentType(applicationJson).body(newGroup)
                     .when().post("/group").then().assertThat().statusCode(HttpStatus.CREATED.value())
                     .extract().as(Group.class);
-       }
 
     }
 
@@ -168,7 +194,7 @@ public class StepDefinition implements En {
         Member member=new Member(memberId, Short.valueOf(rating));
 
 
-        Map<String, Member> responseMembers=given().basePath(basePath).contentType(applicationJson)
+        given().basePath(basePath).contentType(applicationJson)
                 .log().all()
                 .queryParam("gid", gid1)
                 .body(member)
@@ -181,7 +207,7 @@ public class StepDefinition implements En {
     @When("I retrieve the group list with group member id {string} via api {string} with expected response status {int}")
     public void whenGetSpecificMemberThenReturnContainingGroups(String memberId, String uri, Integer statusCode) throws Exception {
 
-       String responseGroup=given().basePath(basePath).contentType(applicationJson)
+       world.responseString=given().basePath(basePath).contentType(applicationJson)
                .log().all()
                 .when().get(uri+"/"+memberId).then().assertThat().statusCode(statusCode)
                 .extract().asString();

@@ -17,7 +17,6 @@ import org.tutorials.wproject2.test.model.Group;
 import org.tutorials.wproject2.test.model.GroupIn;
 import org.tutorials.wproject2.test.model.Member;
 import org.tutorials.wproject2.test.service.IGroupService;
-import org.tutorials.wproject2.test.exception.ResourceNotFoundException;
 
 import java.util.*;
 
@@ -25,10 +24,6 @@ import java.util.*;
 @RestController
 @RequestMapping(value="/wrest")
 public class Wproject1Controller {
-
-    //private static final String notFoundError="Exception.notFound";
-    private static final String notFoundError1="Exception.notFound1";
-    //private static final String unexpectedError="Exception.unexpected";
 
     @Autowired
     private IGroupService groupService;
@@ -46,14 +41,6 @@ public class Wproject1Controller {
         this.messageSource = messageSource;
     }
 
-    //@Autowired
-    //private MessageSource messageSource;
-
-    //throw not found exception for root access
-    @GetMapping(value="/")
-    public void rootIndex() {
-       //throw new ResourceNotFoundException(messageSource.getMessage(NotAllowedError, null, Locale.US));
-    }
 
     //returns empty list if no group exists
     @ApiResponses(value= {
@@ -83,9 +70,8 @@ public class Wproject1Controller {
     @ResponseStatus(HttpStatus.OK)
     public Optional<Group> getGroup(@RequestParam(value="gid") Long gid) {
 
-        Optional<Group>group1=groupService.findGroup(gid);
-        group1.orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage(notFoundError1, new Object[]{"group : " + gid.toString()}, Locale.US)));
-        return group1;
+        return groupService.findGroup(gid);
+        
     }
 
     //returns null instead of NotFoundException
@@ -101,9 +87,8 @@ public class Wproject1Controller {
     @ResponseStatus(HttpStatus.OK)
     public Optional<List<Group>> getGroupWithMemberId(@PathVariable String memberId) {
 
-        Optional<List<Group>>groups=groupService.findMemberById(memberId);
-        groups.orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage(notFoundError1, new Object[]{"member : " + memberId}, Locale.US)));
-        return groups;
+        return groupService.findMemberById(memberId);
+        
 
     }
 
@@ -119,42 +104,28 @@ public class Wproject1Controller {
     @DeleteMapping(path="/group/{gid}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteGroup(@PathVariable Long gid) {
-        //Optional<Group>existingGroup=getGroup(gid);
-        //groupService.deleteGroup(existingGroup.get());
+       
         Optional<Group>returnedGroup=groupService.findGroup(gid);
-        returnedGroup.orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage(notFoundError1, new Object[]{"group : " + gid.toString()}, Locale.US)));
-        groupService.deleteGroup(returnedGroup.get());
+        if (returnedGroup.isPresent()) {
+            groupService.deleteGroup(returnedGroup.get());
+        }
     }
-
-
-    //do nothing if member does not exist
-    @DeleteMapping(path="/group/member/{memberId}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public List<Group> deleteMember(@PathVariable String memberId) {
-        //To be implemented later
-            //Optional<Set<Group>>existingGroups=this.getGroupWithMemberId(memberId);
-           // existingGroups.get().forEach(g->groupService.deleteMember(g, memberId));
-        return groupService.deleteMember(memberId);
-    }
-
 
     //do nothing if group does not exist
     @PutMapping(value="/group/{gid}/attr")
     @ResponseStatus(HttpStatus.OK)
     public Optional<Group> updateGroupAttributes(@PathVariable Long gid, @RequestBody Map<String, String> attributeIn) {
-        Optional<Group>updatedGroup=groupService.updateGroupAttribute(gid, attributeIn);
-        updatedGroup.orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage(notFoundError1, new Object[]{"group : " + gid.toString()}, Locale.US)));
-        return updatedGroup;
+        return groupService.updateGroupAttribute(gid, attributeIn);
+        
     }
     //do nothing if group does not exist
     @PutMapping(value="/group/member/rating")
     @ResponseStatus(HttpStatus.OK)
-    //public Optional<Group> updateMemberRating(@PathVariable Long gid, @RequestBody Member memberIn) {
+
     public Optional<Group> updateMemberRating(@RequestParam Long gid, @RequestBody Member member) {
 
-        Optional<Group>updatedGroup=groupService.updateGroupMember(gid, member);
-        updatedGroup.orElseThrow(()->new ResourceNotFoundException(messageSource.getMessage(notFoundError1, new Object[]{"group : " + gid.toString()}, Locale.US)));
-        return updatedGroup;
+        return groupService.updateGroupMember(gid, member);
+       
     }
 
 }
