@@ -1,6 +1,36 @@
-name: GitHub Actions Demo
+name: Wendy's GitHub Actions Learning 
 run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: [push]
+on: 
+   workflow_dispatch:
+      inputs:
+         logLevels:
+           description: 'Log level"
+           required: true
+           default: 'warning'
+           type: choice
+           options:
+           - info
+           - warning
+           - debug
+       tags:
+         description: "Scenario Tags"
+         required: false
+         type: boolean
+       environment:
+         descriptions: 'Environmentn to run tests against'
+         type: environment
+         required: true
+
+jobs:
+    log-inputs:
+       runs-on: ubuntu-latest
+       steps:
+         -- run:
+              echo "Level $LOGLEVEL"
+              echo "Tags: $TAGS"
+              echo " Environment ; $ENVIRONMENT" 
+
+ 
 jobs:
   Explore-GitHub-Actions:
     runs-on: ubuntu-latest
