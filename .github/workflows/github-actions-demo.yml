@@ -6,10 +6,24 @@ on:
       logLevel:
         description: 'A message to include in the workflow run'
         required: true
-      Tags:
-        description: 'A boolean input'
-        required: false
-
+        default: 'warning'
+        type: choice
+        options:
+          - info
+          - warning
+          - debug
+      print_tags:
+        description: 'True to print to STDOUT'
+        required: true
+        type: boolean
+      tags:
+        description: 'Test scenario tags'
+        required: true
+        type: string
+      environment:
+        description: 'Environment to run tests against'
+        type: environment
+        required: true
 jobs:
   printInputs:
     runs-on: ubuntu-latest
