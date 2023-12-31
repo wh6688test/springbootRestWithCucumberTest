@@ -3,10 +3,10 @@ name: Manual Workflow Dispatch
 on:
   workflow_dispatch:
     inputs:
-      message:
+      logLevel:
         description: 'A message to include in the workflow run'
         required: true
-      something:
+      Tags:
         description: 'A boolean input'
         required: false
 
