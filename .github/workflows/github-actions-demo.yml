@@ -1,35 +1,19 @@
-name: Wendy's GitHub Actions Learning 
-run-name: ${{ github.actor }} is testing out GitHub Actions 🚀
-on: 
-   workflow_dispatch:
-      inputs:
-         logLevels:
-           description: 'Log level'
-           required: true
-           default: 'warning'
-           type: choice
-           options:
-           - info
-           - warning
-           - debug
-       tags:
-         description: 'Scenario Tags'
-         required: false
-         type: boolean
-       environment:
-         descriptions: 'Environmentn to run tests against'
-         type: environment
-         required: true
+name: Manual Workflow Dispatch
+
+on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'A message to include in the workflow run'
+        required: true
+      something:
+        description: 'A boolean input'
+        required: false
 
 jobs:
-    log-inputs:
-       runs-on: ubuntu-latest
-       steps:
-         - run:
-              echo "Level $LEVEL"
-              echo "Tags: $TAGS"
-              echo " Environment ; $ENVIRONMENT" 
-           env:
-              LEVEL: ${{inputs.logLevel}}
-              TAGS: ${{inputs.tags}}
-              ENVIRONMENT: ${{inputs.environment}}
+  printInputs:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "Log level: ${{ github.event.inputs.logLevel }}"
+          echo "Tags: ${{ github.event.inputs.tags }}"
